@@ -66,7 +66,7 @@ where
     let deserialized = deserialize_client(json);
     assert_eq!(*ty, deserialized);
 
-    let deserialized = deserialize_client(json);
+    let deserialized = deserialize_server(json);
     assert_eq!(*ty, deserialized);
 }
 
@@ -136,4 +136,21 @@ fn server_unknown_fields() {
     assert!(e.is_data());
     assert!(e.to_string().contains("foo"));
     assert!(e.to_string().contains("bogus"));
+}
+
+#[derive(Deserialize, Debug, PartialEq)]
+struct Bar {
+    baz: ByteBuf,
+}
+
+#[test]
+fn server_bytebuf_field() {
+    let deserialized = deserialize_server::<Bar>(
+        r#"
+        {
+            "baz": "Zm9vYmFy"
+        }
+        "#,
+    );
+    assert_eq!(Bar { baz: ByteBuf::from(b"foobar".to_vec()) }, deserialized);
 }
